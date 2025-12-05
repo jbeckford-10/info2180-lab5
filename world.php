@@ -11,18 +11,36 @@ try {
     echo "Error: connection unsuccessful " . $e->getMessage();
     exit();
 }
-$countrySearch = $_GET['country'] ?? '';
-if (!empty($countrySearch)) {
-    $stmt = $conn->query("SELECT * FROM countries WHERE name LIKE '%$countrySearch%'");
-} else {
 
-    $stmt = $conn->query("SELECT * FROM countries");
-}
+$countrySearch = $_GET['country'] ?? '';
+$lookup  = $_GET['lookup'] ?? '';
+
+
+$query = "SELECT name, continent, independence_year, head_of_state
+          FROM countries
+          WHERE name LIKE :country";
+
+$stmt = $conn->prepare($query);
+$stmt->bindValue(':country', "%$countrySearch%");
+$stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
-<ul>
-<?php foreach ($results as $row): ?>
-  <li><?= $row['name'] . ' is ruled by ' . $row['head_of_state']; ?></li>
-<?php endforeach; ?>
-</ul>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Continent</th>
+        <th>Independence Year</th>
+        <th>Head of State</th>
+    </tr>
+
+    <?php foreach ($results as $row): ?>
+        <tr>
+            <?php foreach ($row as $value): ?>
+                <td><?= htmlspecialchars($value) ?></td>
+            <?php endforeach; ?>
+        </tr>
+    <?php endforeach; ?>
+</table>
+
+
