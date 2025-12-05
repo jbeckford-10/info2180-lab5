@@ -16,9 +16,16 @@ $countrySearch = $_GET['country'] ?? '';
 $lookup  = $_GET['lookup'] ?? '';
 
 
-$query = "SELECT name, continent, independence_year, head_of_state
-          FROM countries
-          WHERE name LIKE :country";
+if ($lookup === "cities") { 
+    $query = "SELECT cities.name, cities.district, cities.population 
+              FROM cities 
+              JOIN countries ON cities.country_code = countries.code 
+              WHERE countries.name LIKE :country";
+} else { 
+    $query = "SELECT name, continent, independence_year, head_of_state 
+              FROM countries 
+              WHERE name LIKE :country";
+}
 
 $stmt = $conn->prepare($query);
 $stmt->bindValue(':country', "%$countrySearch%");
@@ -28,19 +35,26 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <table>
     <tr>
-        <th>Name</th>
-        <th>Continent</th>
-        <th>Independence Year</th>
-        <th>Head of State</th>
+        <?php if ($lookup === "cities"): ?>
+            <th>Name</th>
+            <th>District</th>
+            <th>Population</th>
+        <?php else: ?>
+            <th>Name</th>
+            <th>Continent</th>
+            <th>Independence Year</th>
+            <th>Head of State</th>
+        <?php endif; ?>
     </tr>
 
     <?php foreach ($results as $row): ?>
         <tr>
-            <?php foreach ($row as $value): ?>
-                <td><?= htmlspecialchars($value) ?></td>
-            <?php endforeach; ?>
+        <?php foreach ($row as $value): ?>
+            <td><?= htmlspecialchars($value) ?></td>
+        <?php endforeach; ?>
         </tr>
     <?php endforeach; ?>
 </table>
+</body>
 
 
